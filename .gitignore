@@ -1,0 +1,43 @@
+# Dependencias
+node_modules/
+backend/node_modules/
+frontend/node_modules/
+
+# Builds
+dist/
+frontend/dist/
+build/
+coverage/
+
+# Variables locales
+.env
+.env.local
+.env.*.local
+backend/.env
+frontend/.env
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+backend/dev-*.log
+frontend/dev-*.log
+
+# Archivos subidos y temporales
+uploads/
+backend/uploads/*
+!backend/uploads/.gitkeep
+tmp/
+temp/
+
+# Sistema/editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Cache
+.cache/
+.vite/

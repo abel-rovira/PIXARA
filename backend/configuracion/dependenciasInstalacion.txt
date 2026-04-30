@@ -1,0 +1,21 @@
+npm install sequelize mysql2 bcryptjs dotenv
+
+//servidor para incorporar codigo de base 
+const express = require('express');
+const db = require('./modelos');
+
+const app = express();
+
+// Middlewares
+app.use(express.json());
+
+// Sincronizar base de datos
+db.sincronizarBaseDatos({ alter: true }) // o { force: true } para resetear
+  .then(() => {
+    app.listen(5000, () => {
+      console.log('Servidor corriendo en el puerto 5000');
+    });
+  })
+  .catch(err => {
+    console.error('Error al iniciar servidor:', err);
+  });
