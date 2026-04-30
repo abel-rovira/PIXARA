@@ -100,7 +100,7 @@ El proyecto actualmente incluye:
 - JWT
 - Multer
 - Dotenv
-- Modo demo sin base de datos obligatoria
+- Base de datos MongoDB
 
 ### Preparado para futuro
 
