@@ -1,0 +1,15 @@
+[
+  {
+    "nombreUsuario": "demo",
+    "correo": "demo@pixara.local",
+    "contrasena": "$2a$12$QygTDL1UtM/S91orqaj/Zu43rRm7m9aN9bFSxL.rrh8jWzzp2QhJi",
+    "avatar": "",
+    "biografia": "Cuenta de prueba para Pixara.",
+    "enlaces": [],
+    "rol": "usuario",
+    "proveedorAuth": "local",
+    "ultimoAcceso": null,
+    "fechaCreacion": "2026-05-05T10:00:00.000Z",
+    "fechaActualizacion": "2026-05-05T10:00:00.000Z"
+  }
+]

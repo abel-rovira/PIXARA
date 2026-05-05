@@ -1,17 +1,17 @@
 ﻿import { Link } from 'react-router-dom';
 
-export default function Footer() {
+export default function Footer({ textos }) {
   return (
     <footer className="site-footer">
       <div>
-        <strong>pixara</strong>
-        <p>Historias, autores y conversaciones con una experiencia limpia.</p>
+        <strong className="footer-brand">PIXARA</strong>
+        <p>{textos?.descripcion || 'Historias, autores y conversaciones con una experiencia limpia.'}</p>
       </div>
       <nav>
-        <Link to="/soporte">Soporte</Link>
-        <Link to="/privacidad">Privacidad</Link>
-        <Link to="/cookies">Cookies</Link>
-        <Link to="/terminos">Términos</Link>
+        <Link to="/soporte">{textos?.soporte || 'Soporte'}</Link>
+        <Link to="/privacidad">{textos?.privacidad || 'Privacidad'}</Link>
+        <Link to="/cookies">{textos?.cookies || 'Cookies'}</Link>
+        <Link to="/terminos">{textos?.terminos || 'Términos'}</Link>
       </nav>
     </footer>
   );

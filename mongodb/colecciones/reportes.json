@@ -1,0 +1,10 @@
+[
+  {
+    "tipo": "publicacion",
+    "referencia": "bienvenido-a-pixara",
+    "usuarioNombreUsuario": "demo",
+    "motivo": "contenido de prueba",
+    "estado": "pendiente",
+    "fechaCreacion": "2026-05-05T10:17:00.000Z"
+  }
+]

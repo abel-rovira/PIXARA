@@ -1,206 +1,399 @@
 <div align="center">
-  <h1>PIXARA — Blog Social</h1>
-  <p><strong>Plataforma de blogging social donde escritores comparten historias, conectan con lectores y construyen su audiencia.</strong></p>
+  <h1>PIXARA</h1>
+  <p><strong>Plataforma social/editorial para escribir, descubrir historias, seguir autores y crear comunidad alrededor de ideas.</strong></p>
 </div>
 
 ---
 
 ## Tabla de Contenidos
 
-- [Capturas de Pantalla](#capturas-de-pantalla)
+- [Descripción](#descripción)
+- [Video Demo](#video-demo)
+- [Estado Actual](#estado-actual)
 - [Características](#características)
 - [Stack Tecnológico](#stack-tecnológico)
+- [Estructura del Proyecto](#estructura-del-proyecto)
 - [Requisitos Previos](#requisitos-previos)
 - [Instalación](#instalación)
-- [Uso](#uso)
+- [Ejecución](#ejecución)
+- [MongoDB](#mongodb)
+- [OAuth Google y Apple](#oauth-google-y-apple)
 - [API Reference](#api-reference)
-- [Despliegue](#despliegue)
+- [Scripts Útiles](#scripts-útiles)
+- [Producción](#producción)
 - [Solución de Problemas](#solución-de-problemas)
+- [Roadmap](#roadmap)
 - [Licencia](#licencia)
 
 ---
 
-## Capturas de Pantalla
+## Descripción
 
-### Página Principal
+**Pixara** es una web social/editorial moderna donde los usuarios pueden registrarse, publicar historias, subir imágenes, comentar, dar me gusta, guardar publicaciones, seguir perfiles y descubrir contenido por intereses.
 
-<img width="1839" height="902" alt="image" src="https://github.com/user-attachments/assets/ef493285-5871-4c32-a64a-51950287aa63" />
+El proyecto está orientado a una experiencia visual limpia, blanca, editorial y profesional, con navegación responsive, modo oscuro, selector de idioma, páginas legales, cookies, perfil editable y persistencia real con MongoDB.
 
-### Login y Registro
+---
 
-| Login | Registro |
-|-------|----------|
-| <img width="644" height="553" alt="image" src="https://github.com/user-attachments/assets/f226331b-02c5-47ff-81fa-0de1c4011fcc" /> | <img width="514" height="634" alt="image" src="https://github.com/user-attachments/assets/47690620-7d90-40fb-8bda-868dced5a47d" /> |
+## Video Demo
+
+Puedes añadir un video corto de unos 40 segundos para enseñar la experiencia principal de Pixara.
+
+Guarda el video en una carpeta, por ejemplo:
+
+```bash
+screenshots/demo-pixara.mp4
+```
+
+Y en GitHub puedes enlazarlo así:
+
+```md
+https://github.com/tu-usuario/tu-repositorio/assets/tu-id/demo-pixara.mp4
+```
+
+O, si prefieres dejarlo dentro del README como referencia local:
+
+```html
+<video src="screenshots/demo-pixara.mp4" controls width="100%"></video>
+```
+
+> Recomendación: graba el video en 1920x1080 o 1366x768, duración aproximada de 40 segundos, mostrando inicio, historias, registro/login, perfil, crear publicación y comentarios.
+
+---
+
+## Estado Actual
+
+El proyecto actualmente incluye:
+
+- Frontend en React + Vite.
+- Backend en Node.js + Express.
+- MongoDB conectado como base de datos real.
+- Registro e inicio de sesión con JWT.
+- Login social preparado con Google y Apple mediante OAuth real.
+- Publicaciones reales con Markdown, etiquetas e imágenes.
+- Perfil editable con foto de perfil.
+- Eliminación de foto de perfil.
+- Seguidores y seguidos visibles en el perfil.
+- Me gusta, comentarios y guardados.
+- Publicaciones privadas/borradores.
+- Feed de historias con filtros: recientes, para ti, siguiendo y populares.
+- Búsqueda de historias y usuarios.
+- Estadísticas reales desde MongoDB.
+- Modo oscuro.
+- Idioma español/inglés.
+- Banner de cookies.
+- Páginas de soporte, privacidad, cookies y términos.
+- Diseño responsive para móvil, tablet y escritorio.
+- Seed inicial para crear usuarios y publicaciones de ejemplo.
+- `.gitignore` y `AGENTS.md`.
+- Herramienta para limpiar textos con codificación rota.
 
 ---
 
 ## Características
 
 | Categoría | Funcionalidades |
-|-----------|----------------|
-| **Autenticación** | Registro, inicio y cierre de sesión con JWT |
-| **Publicaciones** | Crear, editar y eliminar con soporte completo de Markdown e imágenes |
-| **Interacción** | Me gusta, comentarios y guardado de publicaciones |
-| **Social** | Seguir/dejar de seguir usuarios, feed personalizado |
-| **Perfil** | Avatar, biografía, historial de publicaciones y estadísticas |
-| **Exploración** | Publicaciones trending, búsqueda en tiempo real y carrusel destacado |
-| **Diseño** | Responsive — optimizado para móvil y escritorio |
+|----------|-----------------|
+| **Autenticación** | Registro, login, JWT, sesión persistente y usuario actual |
+| **OAuth** | Google y Apple conectados a credenciales reales |
+| **Usuarios** | Perfil, avatar, biografía, edición, seguidores y seguidos |
+| **Publicaciones** | Crear, listar, detalle, imágenes, Markdown, etiquetas y borradores |
+| **Interacción** | Me gusta, comentarios, guardados y publicaciones privadas |
+| **Exploración** | Historias recientes, para ti, siguiendo, populares y búsqueda |
+| **Diseño** | Interfaz blanca, editorial, responsive, modo oscuro e idiomas |
+| **Legal** | Cookies, privacidad, términos y soporte |
+| **Backend** | API REST con Express y MongoDB |
+| **Base de datos** | MongoDB con Mongoose |
 
 ---
 
 ## Stack Tecnológico
 
-**Backend**
-- Node.js + Express
-- MySQL 8 + Sequelize ORM
-- JWT · Bcrypt · Multer
+### Frontend
 
-**Frontend**
-- React + React Router DOM
-- TailwindCSS
-- Axios · React Markdown · Lucide React · React Hot Toast
+- React
+- Vite
+- React Router DOM
+- Axios
+- React Markdown
+- Remark GFM
+- Lucide React
+- React Hot Toast
+- CSS propio en `frontend/src/estilos.css`
+
+### Backend
+
+- Node.js
+- Express
+- MongoDB
+- Mongoose
+- JWT
+- Bcrypt
+- Multer
+- Dotenv
+
+---
+
+## Estructura del Proyecto
+
+```bash
+web-social-blog-main/
+├── AGENTS.md
+├── README.md
+├── .gitignore
+├── backend/
+│   ├── configuracion/
+│   ├── controladores/
+│   ├── middlewares/
+│   ├── modelosMongo/
+│   ├── rutas/
+│   ├── uploads/
+│   ├── utilidades/
+│   ├── .env.example
+│   └── servidor.js
+├── frontend/
+│   ├── index.html
+│   └── src/
+│       ├── Aplicacion.jsx
+│       ├── principal.jsx
+│       ├── estilos.css
+│       ├── componentes/
+│       ├── configuracion/
+│       ├── datos/
+│       ├── ganchos/
+│       ├── idiomas/
+│       ├── paginas/
+│       ├── servicios/
+│       └── utilidades/
+├── herramientas/
+│   └── limpiarCodificacion.js
+└── mongodb/
+    ├── sembrar-contenido-inicial.js
+    ├── importar-mongodb.js
+    ├── importar-mongodb.ps1
+    └── colecciones/
+```
 
 ---
 
 ## Requisitos Previos
 
-- [Node.js](https://nodejs.org/) v18 o superior
-- [MySQL](https://www.mysql.com/) v8 o superior
-- npm o Yarn
+- Node.js v18 o superior
+- npm
+- MongoDB local o MongoDB Atlas
+- MongoDB Compass opcional para ver la base de datos
+
+No necesitas MySQL. El objetivo actual del proyecto es MongoDB.
 
 ---
 
 ## Instalación
 
-### 1. Clonar el repositorio
+### 1. Clonar el proyecto
 
 ```bash
 git clone https://github.com/tu-usuario/pixara.git
 cd pixara
 ```
 
-### 2. Configurar la base de datos
-
-```bash
-mysql -u root -p
-```
-
-```sql
-CREATE DATABASE ns_red_social_blog CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE ns_red_social_blog;
-SOURCE backend/sql/00_prueba_baseDatos.sql;
-```
-
-### 3. Configurar el Backend
+### 2. Instalar dependencias del backend
 
 ```bash
 cd backend
 npm install
 ```
 
-Crea el archivo `.env`:
+### 3. Configurar backend
+
+Crea un archivo `.env` dentro de `backend/`:
 
 ```env
-DB_HOST=localhost
-DB_USER=root
-DB_PASSWORD=tu_contraseña
-DB_NAME=ns_red_social_blog
-DB_PORT=3306
 PORT=5000
-JWT_SECRET=tu_clave_secreta_muy_segura
+DB_PROVIDER=mongodb
+JWT_SECRET=cambia_esto_por_un_secreto_largo
+JWT_EXPIRACION=7d
+MONGODB_URI=mongodb://localhost:27017/pixara
+FRONTEND_URL=http://localhost:5173
+
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GOOGLE_CALLBACK_URL=http://localhost:5000/api/autenticacion/oauth/callback
+
+APPLE_CLIENT_ID=
+APPLE_TEAM_ID=
+APPLE_KEY_ID=
+APPLE_PRIVATE_KEY=
+APPLE_CALLBACK_URL=http://localhost:5000/api/autenticacion/oauth/callback
 ```
 
-```bash
-npm start
-# Servidor disponible en http://localhost:5000
-```
-
-### 4. Configurar el Frontend
+### 4. Instalar dependencias del frontend
 
 ```bash
-cd frontend
+cd ../frontend
 npm install
 ```
 
-Crea el archivo `.env`:
+Opcionalmente crea `frontend/.env`:
 
 ```env
-REACT_APP_API_URL=http://localhost:5000/api
-```
-
-```bash
-npm start
-# Aplicación disponible en http://localhost:3000
+VITE_API_URL=http://localhost:5000/api
 ```
 
 ---
 
-## Uso
+## Ejecución
 
-<details>
-<summary><strong>Registro e Inicio de Sesión</strong></summary>
+### 1. Arrancar MongoDB
 
-- Accede a `/registro` para crear una cuenta con nombre de usuario, email y contraseña.
-- Accede a `/login` para iniciar sesión. Serás redirigido automáticamente al home.
+En Windows:
 
-</details>
+```powershell
+net start MongoDB
+```
 
-<details>
-<summary><strong>Crear una Publicación</strong></summary>
+### 2. Arrancar backend
 
-1. Inicia sesión y haz clic en **"Escribir"** en la barra de navegación.
-2. Completa el título, el contenido (soporta Markdown) y añade imágenes opcionales.
-3. Agrega etiquetas separadas por comas para mejorar la visibilidad.
-4. Elige **Publicar** o **Guardar como borrador**.
+```bash
+cd backend
+npm start
+```
 
-</details>
+Backend:
 
-<details>
-<summary><strong>Interactuar con Publicaciones</strong></summary>
+```bash
+http://localhost:5000
+```
 
-- **Me gusta** — haz clic en el ícono de corazón en cualquier publicación.
-- **Guardar** — guarda publicaciones para leerlas más tarde desde la sección *Guardados*.
-- **Comentar** — abre una publicación y escribe tu comentario al pie.
+### 3. Arrancar frontend
 
-</details>
+```bash
+cd frontend
+npm run dev
+```
 
-<details>
-<summary><strong>Perfil y Seguimiento</strong></summary>
+Frontend:
 
-- Edita tu perfil (avatar, biografía, datos personales) desde tu página de usuario.
-- Visita el perfil de otro usuario para seguirlo o dejar de seguirlo.
-- Tu feed mostrará las publicaciones de las personas que sigues.
+```bash
+http://localhost:5173
+```
 
-</details>
+---
 
-<details>
-<summary><strong>Explorar y Buscar</strong></summary>
+## MongoDB
 
-- La sección **Explorar** muestra las publicaciones con más actividad (trending).
-- La **barra de búsqueda** filtra publicaciones por título o contenido en tiempo real.
+La base de datos se conecta con:
 
-</details>
+```env
+MONGODB_URI=mongodb://localhost:27017/pixara
+```
+
+Modelos principales:
+
+- Usuario
+- Publicación
+- Comentario
+- Me gusta
+- Guardado
+- Seguidor
+
+Para crear contenido inicial:
+
+```bash
+node mongodb/sembrar-contenido-inicial.js
+```
+
+Usuarios de ejemplo creados por el seed:
+
+- `pixara`
+- `afinidad`
+- `criterio`
+- `mapa`
+- `sombra`
+
+Contraseña de ejemplo:
+
+```bash
+pixara123
+```
+
+---
+
+## OAuth Google y Apple
+
+El proyecto tiene flujo OAuth real preparado.
+
+### Google
+
+En Google Cloud Console configura:
+
+```text
+Authorized JavaScript origins:
+http://localhost:5173
+
+Authorized redirect URI:
+http://localhost:5000/api/autenticacion/oauth/callback
+```
+
+Variables:
+
+```env
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GOOGLE_CALLBACK_URL=http://localhost:5000/api/autenticacion/oauth/callback
+```
+
+### Apple
+
+Necesitas cuenta de Apple Developer, un Services ID y una clave privada.
+
+Variables:
+
+```env
+APPLE_CLIENT_ID=
+APPLE_TEAM_ID=
+APPLE_KEY_ID=
+APPLE_PRIVATE_KEY=
+APPLE_CALLBACK_URL=http://localhost:5000/api/autenticacion/oauth/callback
+```
+
+Apple suele devolver el callback con `POST`, y el backend ya soporta `GET` y `POST` para `/api/autenticacion/oauth/callback`.
 
 ---
 
 ## API Reference
 
+### Sitio
+
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| `GET` | `/api/sitio/salud` | Estado de la API |
+| `GET` | `/api/sitio/estadisticas` | Estadísticas reales |
+| `GET` | `/api/sitio/modulos` | Módulos activos |
+| `GET` | `/api/sitio/actividad` | Actividad reciente |
+| `GET` | `/api/sitio/notificaciones` | Notificaciones |
+| `POST` | `/api/sitio/newsletter` | Suscripción al boletín |
+| `POST` | `/api/sitio/feedback` | Enviar feedback |
+
 ### Autenticación
 
 | Método | Endpoint | Descripción |
 |--------|----------|-------------|
-| `POST` | `/api/autenticacion/registro` | Registrar nuevo usuario |
+| `POST` | `/api/autenticacion/registro` | Registrar usuario |
 | `POST` | `/api/autenticacion/login` | Iniciar sesión |
-| `GET` | `/api/autenticacion/yo` | Obtener usuario actual |
+| `GET` | `/api/autenticacion/yo` | Usuario actual |
+| `GET` | `/api/autenticacion/google` | Iniciar OAuth Google |
+| `GET` | `/api/autenticacion/apple` | Iniciar OAuth Apple |
+| `GET` | `/api/autenticacion/oauth/callback` | Callback OAuth |
+| `POST` | `/api/autenticacion/oauth/callback` | Callback OAuth Apple |
 
 ### Usuarios
 
 | Método | Endpoint | Descripción |
 |--------|----------|-------------|
-| `GET` | `/api/usuarios/:nombreUsuario` | Obtener perfil |
-| `PUT` | `/api/usuarios/perfil` | Actualizar perfil |
-| `PUT` | `/api/usuarios/cambiar-contrasena` | Cambiar contraseña |
 | `GET` | `/api/usuarios/buscar` | Buscar usuarios |
+| `GET` | `/api/usuarios/:nombreUsuario` | Perfil de usuario |
+| `PUT` | `/api/usuarios/perfil` | Actualizar perfil |
+| `DELETE` | `/api/usuarios/perfil/avatar` | Eliminar foto de perfil |
 
 ### Publicaciones
 
@@ -208,57 +401,81 @@ npm start
 |--------|----------|-------------|
 | `GET` | `/api/publicaciones` | Listar publicaciones |
 | `GET` | `/api/publicaciones/feed` | Feed personalizado |
-| `GET` | `/api/publicaciones/explorar` | Publicaciones trending |
-| `GET` | `/api/publicaciones/:id` | Obtener por ID |
+| `GET` | `/api/publicaciones/siguiendo` | Publicaciones de usuarios seguidos |
+| `GET` | `/api/publicaciones/explorar` | Populares/tendencias |
+| `GET` | `/api/publicaciones/buscar` | Buscar publicaciones |
+| `GET` | `/api/publicaciones/:id` | Obtener publicación |
 | `POST` | `/api/publicaciones` | Crear publicación |
-| `PUT` | `/api/publicaciones/:id` | Actualizar publicación |
+| `PUT` | `/api/publicaciones/:id` | Actualizar o poner privada |
 | `DELETE` | `/api/publicaciones/:id` | Eliminar publicación |
-| `POST` | `/api/publicaciones/:id/me-gusta` | Dar/quitar me gusta |
-| `POST` | `/api/publicaciones/:id/guardar` | Guardar/quitar publicación |
+| `POST` | `/api/publicaciones/:id/me-gusta` | Dar o quitar me gusta |
+| `POST` | `/api/publicaciones/:id/guardar` | Guardar o quitar guardado |
+| `GET` | `/api/publicaciones/guardadas/mias` | Publicaciones guardadas |
+| `GET` | `/api/publicaciones/borradores/mios` | Borradores |
 
 ### Comentarios
 
 | Método | Endpoint | Descripción |
 |--------|----------|-------------|
-| `GET` | `/api/comentarios/publicacion/:id` | Obtener comentarios |
 | `POST` | `/api/comentarios` | Crear comentario |
-| `PUT` | `/api/comentarios/:id` | Actualizar comentario |
-| `DELETE` | `/api/comentarios/:id` | Eliminar comentario |
 
 ### Seguidores
 
 | Método | Endpoint | Descripción |
 |--------|----------|-------------|
-| `POST` | `/api/seguidores/seguir/:usuarioId` | Seguir usuario |
-| `DELETE` | `/api/seguidores/dejar-seguir/:usuarioId` | Dejar de seguir |
-| `GET` | `/api/seguidores/:usuarioId/seguidores` | Listar seguidores |
-| `GET` | `/api/seguidores/:usuarioId/siguiendo` | Listar seguidos |
-| `GET` | `/api/seguidores/verificar/:usuarioId` | Verificar seguimiento |
+| `POST` | `/api/seguidores/seguir/:id` | Seguir usuario |
+| `DELETE` | `/api/seguidores/dejar-seguir/:id` | Dejar de seguir |
+| `GET` | `/api/seguidores/:id/seguidores` | Ver seguidores |
+| `GET` | `/api/seguidores/:id/siguiendo` | Ver usuarios seguidos |
 
 ---
 
-## Despliegue
-
-### Backend
-
-```bash
-NODE_ENV=production
-JWT_SECRET=clave_larga_y_aleatoria
-
-npm install -g pm2
-pm2 start server.js --name pixara-api
-```
-
-Configura CORS para aceptar únicamente el dominio del frontend en producción.
+## Scripts Útiles
 
 ### Frontend
 
 ```bash
+npm run dev
 npm run build
-# Sirve la carpeta /build con Nginx, Apache o Vercel
+npm run preview
 ```
 
-> Asegúrate de que la carpeta `backend/uploads/` exista y tenga permisos de escritura en producción.
+### Backend
+
+```bash
+npm start
+npm run dev
+```
+
+### Revisar codificación rota
+
+```bash
+node herramientas/limpiarCodificacion.js
+```
+
+### Auditoría de vulnerabilidades
+
+Ejecutar en raíz, backend y frontend:
+
+```bash
+npm audit --audit-level=low
+```
+
+---
+
+## Producción
+
+Antes de subir a producción:
+
+- Cambia `JWT_SECRET` por una clave larga.
+- Usa MongoDB Atlas o una instancia MongoDB real.
+- Cambia `FRONTEND_URL` al dominio real.
+- Cambia `VITE_API_URL` a la URL real del backend.
+- Configura OAuth con URLs de producción.
+- No uses uploads locales si tu hosting borra archivos al reiniciar; usa Cloudinary, S3 o similar.
+- Ejecuta `npm audit --audit-level=low`.
+- Ejecuta `npm run build` en frontend.
+- Ejecuta `node --check servidor.js` en backend.
 
 ---
 
@@ -266,30 +483,37 @@ npm run build
 
 | Problema | Solución |
 |----------|----------|
-| Error de conexión a la base de datos | Verifica que MySQL esté activo y que las credenciales en `.env` sean correctas |
-| Módulos no encontrados | Ejecuta `npm install`. Si persiste, elimina `node_modules` y `package-lock.json` y reinstala |
-| Error al iniciar sesión | Comprueba que el backend esté en ejecución y revisa los logs de la consola |
-| Las imágenes no cargan | Verifica que exista la carpeta `backend/uploads/` con permisos de escritura |
+| `npm run dev` no existe | Ejecuta ese comando dentro de `frontend/`, no en la raíz ni en `backend/` |
+| MongoDB no conecta | Ejecuta `net start MongoDB` o revisa `MONGODB_URI` |
+| No se guarda un usuario | Revisa que `DB_PROVIDER=mongodb` y que el backend esté arrancado |
+| OAuth no funciona | Faltan credenciales reales o la URL callback no coincide |
+| Las imágenes no aparecen | Revisa la carpeta `backend/uploads/` y la URL del backend |
+| Textos con codificación rota | Ejecuta `node herramientas/limpiarCodificacion.js` |
+| El puerto está ocupado | Cambia `PORT` o cierra el proceso anterior |
+
+---
+
+## Roadmap
+
+Próximos pasos recomendados:
+
+- Recuperación de contraseña.
+- Verificación de correo.
+- Notificaciones reales persistentes.
+- Panel de administración.
+- Sistema de reportes/moderación.
+- Almacenamiento de imágenes en Cloudinary o S3.
+- Tests automatizados.
+- Despliegue completo en producción.
 
 ---
 
 ## Licencia
 
-Distribuido bajo la Licencia ISC. Consulta el archivo `LICENSE` para más información.
+Distribuido bajo licencia ISC.
 
 ---
 
 <div align="center">
-Para soporte o consultas, abre un issue en el repositorio del proyecto.
+  <strong>PIXARA</strong> — leer, escribir y conectar sin ruido.
 </div>
-
----
-
-Guarda tus capturas en la carpeta `screenshots/` con estos nombres:
-
-| Archivo | Sección |
-|--------|---------|
-| `screenshots/home.png` | Página principal |
-| `screenshots/login.png` | Pantalla de login |
-| `screenshots/registro.png` | Pantalla de registro |
-| `screenshots/perfil.png` | Perfil de usuario |

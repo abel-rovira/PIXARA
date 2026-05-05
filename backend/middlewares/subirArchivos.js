@@ -1,9 +1,9 @@
-const multer = require('multer');
+﻿const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
 // crear directorio de uploads si no existe
-const directorioUploads = path.join(__dirname, '../../uploads');
+const directorioUploads = path.join(__dirname, '../uploads');
 if (!fs.existsSync(directorioUploads)) {
   fs.mkdirSync(directorioUploads, { recursive: true });
 }
@@ -28,7 +28,7 @@ const filtroArchivos = (req, file, cb) => {
   if (extensionValida && mimetypeValido) {
     cb(null, true);
   } else {
-    cb(new Error('Solo se permiten imágenes (jpeg, jpg, png, gif, webp)'));
+    cb(new Error('Solo se permiten imagenes (jpeg, jpg, png, gif, webp)'));
   }
 };
 
@@ -47,7 +47,7 @@ const manejarErroresMulter = (err, req, res, next) => {
     if (err.code === 'LIMIT_FILE_SIZE') {
       return res.status(400).json({
         exito: false,
-        mensaje: 'El archivo es demasiado grande. Tamaño máximo: 5MB'
+        mensaje: 'El archivo es demasiado grande. Tamano maximo: 5MB'
       });
     }
     return res.status(400).json({

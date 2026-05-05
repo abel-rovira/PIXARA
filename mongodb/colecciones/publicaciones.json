@@ -1,0 +1,16 @@
+[
+  {
+    "titulo": "Bienvenido a Pixara",
+    "contenido": "Esta es una publicación de ejemplo para probar el flujo social de Pixara.",
+    "slug": "bienvenido-a-pixara",
+    "autorNombreUsuario": "demo",
+    "imagenes": [],
+    "etiquetas": ["inicio", "pixara", "demo"],
+    "estado": "publicada",
+    "visibilidad": "publica",
+    "totalMeGustas": 0,
+    "totalComentarios": 0,
+    "fechaCreacion": "2026-05-05T10:05:00.000Z",
+    "fechaActualizacion": "2026-05-05T10:05:00.000Z"
+  }
+]

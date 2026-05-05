@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const db = require('./modelos'); 
+const { conectarMongo } = require('./configuracion/conexionMongo');
 
 const app = express();
 const proveedorDatos = process.env.DB_PROVIDER || 'demo';
@@ -16,17 +17,32 @@ app.use(express.urlencoded({ extended: true }));
 // CORREGIDO: ahora apunta a ./uploads (dentro de backend)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-if (proveedorDatos !== 'mysql') {
+if (proveedorDatos === 'mongodb') {
+  app.use('/api/autenticacion', require('./rutas/autenticacionMongo'));
+  app.use('/api/usuarios', require('./rutas/usuariosMongo'));
+  app.use('/api/publicaciones', require('./rutas/publicacionesMongo'));
+  app.use('/api/comentarios', require('./rutas/comentariosMongo'));
+  app.use('/api/seguidores', require('./rutas/seguidoresMongo'));
+  app.use('/api', require('./rutas/contenidoDemostracion'));
+}
+
+if (proveedorDatos === 'demo') {
   app.use('/api', require('./rutas/demostracion'));
 }
 
 // rutas
-app.use('/api/autenticacion', require('./rutas/autenticacion'));
-app.use('/api/usuarios', require('./rutas/usuarios'));
-app.use('/api/publicaciones', require('./rutas/publicaciones'));
-app.use('/api/comentarios', require('./rutas/comentarios'));
-app.use('/api/seguidores', require('./rutas/seguidores'));
-app.use('/api/sitio', require('./rutas/sitio'));
+if (proveedorDatos === 'mysql') {
+  app.use('/api/autenticacion', require('./rutas/autenticacion'));
+}
+if (proveedorDatos === 'mysql') {
+  app.use('/api/usuarios', require('./rutas/usuarios'));
+}
+if (proveedorDatos === 'mysql') {
+  app.use('/api/publicaciones', require('./rutas/publicaciones'));
+  app.use('/api/comentarios', require('./rutas/comentarios'));
+  app.use('/api/seguidores', require('./rutas/seguidores'));
+  app.use('/api/sitio', require('./rutas/sitio'));
+}
 
 // ruta de prueba
 app.get('/', (req, res) => {
@@ -73,6 +89,12 @@ const iniciarServidor = async () => {
       console.log(`Base de datos MySQL: ${db.sequelize.config.database}`);
     } catch (error) {
       console.error('Base de datos MySQL no disponible. El servidor arrancara en modo limitado:', error.message);
+    }
+  } else if (proveedorDatos === 'mongodb') {
+    try {
+      await conectarMongo();
+    } catch (error) {
+      console.error('MongoDB no disponible. Revisa MONGODB_URI o arranca mongod:', error.message);
     }
   } else {
     console.log('Modo demo activo. No se conecta a MySQL. MongoDB se integrara cuando se defina el modelo.');

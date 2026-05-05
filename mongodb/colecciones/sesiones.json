@@ -1,0 +1,11 @@
+[
+  {
+    "usuarioNombreUsuario": "demo",
+    "proveedor": "local",
+    "dispositivo": "desarrollo",
+    "ip": "127.0.0.1",
+    "activa": true,
+    "fechaCreacion": "2026-05-05T10:16:00.000Z",
+    "fechaExpiracion": "2026-05-12T10:16:00.000Z"
+  }
+]

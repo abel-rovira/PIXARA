@@ -22,7 +22,7 @@ function IconoApple() {
 
 export default function BotonesOAuth() {
   const handleOAuth = (provider) => {
-    toast('OAuth preparado. Falta configurar credenciales en backend.');
+    toast('Redirigiendo al proveedor...');
     startOAuth(provider);
   };
 

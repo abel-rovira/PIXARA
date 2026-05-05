@@ -1,0 +1,10 @@
+[
+  {
+    "usuarioNombreUsuario": "demo",
+    "temas": ["diseño", "tecnología", "historias"],
+    "idioma": "es",
+    "modoLectura": "limpio",
+    "notificacionesEmail": true,
+    "fechaActualizacion": "2026-05-05T10:15:00.000Z"
+  }
+]

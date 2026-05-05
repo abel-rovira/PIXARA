@@ -10,7 +10,6 @@ import {
   ChevronRight,
   Cookie,
   Edit3,
-  Globe2,
   Heart,
   Lock,
   Menu,
@@ -25,9 +24,7 @@ import {
 } from 'lucide-react';
 import OAuthButtons from './componentes/autenticacion/BotonesOAuth';
 import Footer from './componentes/estructura/PiePagina';
-import LiveStats from './componentes/inicio/EstadisticasEnVivo';
-import ProductSections from './componentes/inicio/SeccionesProducto';
-import ValueSections from './componentes/inicio/SeccionesValor';
+import { getSiteStats } from './servicios/servicioSitio';
 import { publicacionesDemo, temasVivos } from './datos/contenidoInicio';
 import CommunityPage from './paginas/PaginaComunidad';
 import CreatorsPage from './paginas/PaginaCreadores';
@@ -186,7 +183,7 @@ function Layout() {
   return (
     <div className="app-shell">
       <header className="topbar">
-        <Link className="brand" to="/">pixara</Link>
+        <Link className="brand" to="/">PIXARA</Link>
         <nav className={`nav-actions ${menuAbierto ? 'is-open' : ''}`}>
           <Link onClick={cerrarMenu} to="/">{t('inicio')}</Link>
           <Link onClick={cerrarMenu} to="/explorar">{t('historias')}</Link>
@@ -214,7 +211,8 @@ function Layout() {
             {tema === 'oscuro' ? <Sun size={20} /> : <Moon size={20} />}
           </button>
           <button className="language-button" type="button" onClick={alternarIdioma} aria-label={t('cambiarIdioma')} title={t('cambiarIdioma')}>
-            <Globe2 size={18} />{idioma.toUpperCase()}
+            <span>{idioma === 'es' ? 'ES' : 'GB'}</span>
+            <span className={`flag-icon flag-${idioma === 'es' ? 'es' : 'gb'}`} aria-hidden="true" />
           </button>
           <Link className="top-search" to="/buscar" aria-label={t('buscar')} onClick={cerrarMenu}><Search size={22} /></Link>
           <button className="menu-button" type="button" onClick={() => setMenuAbierto((actual) => !actual)} aria-label={menuAbierto ? t('cerrarMenu') : t('abrirMenu')}>
@@ -251,7 +249,7 @@ function Layout() {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
-      <Footer />
+      <Footer textos={{ descripcion: t('footerTexto'), soporte: t('soporte'), privacidad: t('privacidad'), cookies: t('cookies'), terminos: t('terminos') }} />
       {!cookiesAceptadas && <CookieBanner onAccept={() => {
         localStorage.setItem('pixara_cookies', 'aceptadas');
         setCookiesAceptadas(true);
@@ -340,15 +338,15 @@ function Feed({ tipo }) {
     return (
       <section className="stories-view">
         <div className="stories-header">
-          <span className="section-label">Historias</span>
-          <h1>Historias</h1>
-          <p>Un feed directo para leer publicaciones, descubrir autores y seguir conversaciones.</p>
+          <span className="section-label">{t('historias')}</span>
+          <h1>{t('historiasHeroTitulo')}</h1>
+          <p>{t('historiasTexto')}</p>
         </div>
         <div className="stories-filters">
-          <button className={filtroHistorias === 'recientes' ? 'active' : ''} onClick={() => setFiltroHistorias('recientes')}>Recientes</button>
-          <button className={filtroHistorias === 'para-ti' ? 'active' : ''} onClick={() => setFiltroHistorias('para-ti')}>Para ti</button>
-          <button className={filtroHistorias === 'siguiendo' ? 'active' : ''} onClick={() => setFiltroHistorias('siguiendo')}>Siguiendo</button>
-          <button className={filtroHistorias === 'populares' ? 'active' : ''} onClick={() => setFiltroHistorias('populares')}>Populares</button>
+          <button className={filtroHistorias === 'recientes' ? 'active' : ''} onClick={() => setFiltroHistorias('recientes')}>{t('recientes')}</button>
+          <button className={filtroHistorias === 'para-ti' ? 'active' : ''} onClick={() => setFiltroHistorias('para-ti')}>{t('paraTi')}</button>
+          <button className={filtroHistorias === 'siguiendo' ? 'active' : ''} onClick={() => setFiltroHistorias('siguiendo')}>{t('siguiendo')}</button>
+          <button className={filtroHistorias === 'populares' ? 'active' : ''} onClick={() => setFiltroHistorias('populares')}>{t('populares')}</button>
         </div>
         <StoriesList publicaciones={publicaciones} estado={estado} filtro={filtroHistorias} onRefresh={() => cargar(pagina)} />
         {totalPaginas > 1 && (
@@ -364,17 +362,15 @@ function Feed({ tipo }) {
 
   return (
     <section className="view home-view">
-      <FeaturedCarousel publicaciones={publicaciones.length ? publicaciones : publicacionesDemo} />
+      <PixaraHomeHero token={token} />
       <TopicRail />
       <div className="section-heading">
-        <h1>{tipo === 'explorar' ? t('exploraNuevo') : t('masHistorias')}</h1>
-        <Link className="hero-secondary" to={token ? '/escribir' : '/registro'}>{token ? t('publicar') : t('unete')}<ArrowRight size={18} /></Link>
+        <h1>{t('historiasRecientes')}</h1>
+        <Link className="hero-secondary" to="/explorar">{t('verHistorias')}<ArrowRight size={18} /></Link>
       </div>
       <PostGrid publicaciones={publicaciones} estado={estado} onRefresh={() => cargar(pagina)} />
-      <LiveStats />
-      <ProductSections />
-      <ValueSections />
-      <DiscoverSection />
+      <HomeNarrative />
+      <HomeSignals />
 
       {totalPaginas > 1 && (
         <div className="pagination">
@@ -387,10 +383,119 @@ function Feed({ tipo }) {
   );
 }
 
+function PixaraHomeHero({ token }) {
+  const { t } = usePreferencias();
+  return (
+    <section className="pixara-hero">
+      <div className="pixara-hero-copy">
+        <span className="carousel-kicker">{t('heroEtiqueta')}</span>
+        <h1>{t('heroTitulo')}</h1>
+        <p>{t('heroTexto')}</p>
+        <div className="hero-actions">
+          <Link className="carousel-cta" to={token ? '/escribir' : '/registro'}>
+            {token ? t('escribirAhora') : t('crearCuenta')} <ArrowRight size={20} />
+          </Link>
+          <Link className="hero-secondary" to="/explorar">{t('explorarHistorias')}</Link>
+        </div>
+      </div>
+      <div className="pixara-hero-visual" aria-hidden="true">
+        <div className="pixara-window">
+          <div className="pixara-window-bar">
+            <i />
+            <i />
+            <i />
+          </div>
+          <div className="pixara-window-body">
+            <div className="pixara-feed-line large" />
+            <div className="pixara-feed-line" />
+            <div className="pixara-feed-card">
+              <span>{t('heroVisualEtiqueta')}</span>
+              <strong>{t('heroVisualTitulo')}</strong>
+              <p>{t('heroVisualTexto')}</p>
+            </div>
+            <div className="pixara-feed-line short" />
+          </div>
+        </div>
+        <div className="pixara-profile-card">
+          <span>PX</span>
+          <strong>Pixara</strong>
+          <small>{t('lecturaSocial')}</small>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function HomeNarrative() {
+  const { t } = usePreferencias();
+  const secciones = [
+    {
+      titulo: t('homeLeeTitulo'),
+      texto: t('homeLeeTexto')
+    },
+    {
+      titulo: t('homeEscribeTitulo'),
+      texto: t('homeEscribeTexto')
+    },
+    {
+      titulo: t('homeDescubreTitulo'),
+      texto: t('homeDescubreTexto')
+    }
+  ];
+
+  return (
+    <section className="home-narrative">
+      <span className="section-label">{t('comoFunciona')}</span>
+      {secciones.map((item, index) => (
+        <article key={item.titulo}>
+          <span>{String(index + 1).padStart(2, '0')}</span>
+          <div>
+            <h2>{item.titulo}</h2>
+            <p>{item.texto}</p>
+          </div>
+        </article>
+      ))}
+    </section>
+  );
+}
+
+function HomeSignals() {
+  const { t } = usePreferencias();
+  const [stats, setStats] = useState({ usuarios: 0, publicaciones: 0, comentarios: 0, guardados: 0 });
+
+  useEffect(() => {
+    getSiteStats()
+      .then(({ data }) => setStats(data.datos || { usuarios: 0, publicaciones: 0, comentarios: 0, guardados: 0 }))
+      .catch(() => {});
+  }, []);
+
+  const items = [
+    [t('usuarios'), stats.usuarios],
+    [t('publicaciones'), stats.publicaciones],
+    [t('comentarios'), stats.comentarios],
+    [t('guardadosContador'), stats.guardados]
+  ];
+
+  return (
+    <section className="home-signals">
+      <div>
+        <span className="section-label">{t('senalesVivas')}</span>
+        <h2>{t('senalesTitulo')}</h2>
+      </div>
+      <div className="home-signal-list">
+        {items.map(([label, value]) => (
+          <p key={label}><strong>{value}</strong><span>{label}</span></p>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function StoriesList({ publicaciones, estado, filtro, onRefresh }) {
-  if (estado === 'cargando') return <div className="status">Cargando historias...</div>;
+  const { t } = usePreferencias();
+  if (estado === 'cargando') return <div className="status">{t('cargandoHistorias')}</div>;
   if (estado === 'error') return <button className="retry" onClick={onRefresh}>Reintentar</button>;
-  if (!publicaciones.length && filtro === 'siguiendo') return <EmptyState title="Aún no sigues a nadie" text="Sigue autores desde su perfil para ver aquí sus publicaciones." />;
+  if (!publicaciones.length && filtro === 'siguiendo') return <EmptyState title={t('siguiendoVacioTitulo')} text={t('siguiendoVacioTexto')} />;
 
   return (
     <div className="stories-list">
@@ -678,7 +783,7 @@ function AuthForm({ modo }) {
 
   return (
     <section className="auth-view">
-      <form className="form-panel" onSubmit={submit}>
+      <form className="form-panel auth-panel" onSubmit={submit}>
         <h1>{esLogin ? t('entrar') : t('crearCuenta')}</h1>
         {!esLogin && (
           <>
@@ -920,6 +1025,9 @@ function Perfil() {
   const [editando, setEditando] = useState(false);
   const [form, setForm] = useState({ nombreUsuario: '', correo: '', biografia: '' });
   const [avatarArchivo, setAvatarArchivo] = useState(null);
+  const [redActiva, setRedActiva] = useState('seguidores');
+  const [redSocial, setRedSocial] = useState({ seguidores: [], siguiendo: [] });
+  const [estadoRed, setEstadoRed] = useState('cargando');
 
   const cargar = useCallback(async () => {
     setEstado('cargando');
@@ -938,9 +1046,32 @@ function Perfil() {
     }
   }, [nombreUsuario]);
 
+  const cargarRedSocial = useCallback(async (usuarioId) => {
+    if (!usuarioId) return;
+    setEstadoRed('cargando');
+    try {
+      const [seguidores, siguiendo] = await Promise.all([
+        api.get(`/seguidores/${usuarioId}/seguidores`),
+        api.get(`/seguidores/${usuarioId}/siguiendo`),
+      ]);
+      setRedSocial({
+        seguidores: seguidores.data.datos || [],
+        siguiendo: siguiendo.data.datos || [],
+      });
+      setEstadoRed('listo');
+    } catch (error) {
+      setEstadoRed('error');
+      toast.error(getErrorMessage(error));
+    }
+  }, []);
+
   useEffect(() => {
     cargar();
   }, [cargar]);
+
+  useEffect(() => {
+    if (perfil?.id) cargarRedSocial(perfil.id);
+  }, [cargarRedSocial, perfil?.id]);
 
   const toggleFollow = async () => {
     try {
@@ -951,6 +1082,7 @@ function Perfil() {
         sigueAlUsuario: !actual.sigueAlUsuario,
         totalSeguidores: Math.max(0, (actual.totalSeguidores || 0) + (actual.sigueAlUsuario ? -1 : 1)),
       }));
+      await cargarRedSocial(perfil.id);
     } catch (error) {
       toast.error(getErrorMessage(error));
     }
@@ -1024,13 +1156,37 @@ function Perfil() {
           </div>
         </form>
       )}
+      <section className="profile-network">
+        <div className="profile-network-header">
+          <div>
+            <span className="section-label">Red social</span>
+            <h2>Personas conectadas</h2>
+          </div>
+          <div className="profile-network-tabs">
+            <button type="button" className={redActiva === 'seguidores' ? 'active' : ''} onClick={() => setRedActiva('seguidores')}>
+              Seguidores <span>{perfil.totalSeguidores || 0}</span>
+            </button>
+            <button type="button" className={redActiva === 'siguiendo' ? 'active' : ''} onClick={() => setRedActiva('siguiendo')}>
+              Siguiendo <span>{perfil.totalSiguiendo || 0}</span>
+            </button>
+          </div>
+        </div>
+        {estadoRed === 'cargando' && <div className="status compact">Cargando usuarios...</div>}
+        {estadoRed === 'error' && <button className="retry" onClick={() => cargarRedSocial(perfil.id)}>Reintentar</button>}
+        {estadoRed === 'listo' && (
+          <UserList
+            usuarios={redSocial[redActiva]}
+            emptyText={redActiva === 'seguidores' ? 'Todavía no tiene seguidores.' : 'Todavía no sigue a nadie.'}
+          />
+        )}
+      </section>
       <PostGrid publicaciones={perfil.publicaciones || []} estado="listo" />
     </section>
   );
 }
 
-function UserList({ usuarios }) {
-  if (!usuarios.length) return null;
+function UserList({ usuarios, emptyText = '' }) {
+  if (!usuarios.length) return emptyText ? <p className="empty-inline">{emptyText}</p> : null;
   return (
     <div className="user-list">
       {usuarios.map((item) => (
