@@ -12,6 +12,7 @@ import {
   Edit3,
   Globe2,
   Heart,
+  Lock,
   Menu,
   MessageCircle,
   Moon,
@@ -145,6 +146,22 @@ function normalizarEtiquetasTexto(valor) {
     .slice(0, 10);
 }
 
+function obtenerInteresesLocales() {
+  try {
+    return JSON.parse(localStorage.getItem('pixara_intereses') || '[]');
+  } catch {
+    return [];
+  }
+}
+
+function guardarInteresesLocales(valor) {
+  const nuevos = normalizarEtiquetasTexto(valor);
+  if (!nuevos.length) return;
+  const actuales = obtenerInteresesLocales();
+  const mezclados = [...new Set([...nuevos, ...actuales])].slice(0, 12);
+  localStorage.setItem('pixara_intereses', JSON.stringify(mezclados));
+}
+
 function PrivateRoute({ children }) {
   const { token } = useAuth();
   return token ? children : <Navigate to="/login" replace />;
@@ -274,28 +291,76 @@ function Feed({ tipo }) {
   const [estado, setEstado] = useState('cargando');
   const [pagina, setPagina] = useState(1);
   const [totalPaginas, setTotalPaginas] = useState(1);
+  const [filtroHistorias, setFiltroHistorias] = useState('recientes');
 
   const cargar = useCallback(async (paginaActual = 1) => {
     setEstado('cargando');
+    if (tipo === 'explorar' && filtroHistorias === 'siguiendo' && !token) {
+      setPublicaciones([]);
+      setPagina(1);
+      setTotalPaginas(1);
+      setEstado('listo');
+      return;
+    }
+
     try {
-      const endpoint = tipo === 'explorar' ? '/publicaciones/explorar' : token && tipo === 'global' ? '/publicaciones/feed' : '/publicaciones';
-      const { data } = await api.get(endpoint, { params: { pagina: paginaActual, limite: 9 } });
+      let endpoint = token && tipo === 'global' ? '/publicaciones/feed' : '/publicaciones';
+      const params = { pagina: paginaActual, limite: 9 };
+
+      if (tipo === 'explorar') {
+        if (filtroHistorias === 'para-ti') {
+          endpoint = '/publicaciones/feed';
+          params.intereses = obtenerInteresesLocales().join(',');
+        } else if (filtroHistorias === 'siguiendo') {
+          endpoint = '/publicaciones/siguiendo';
+        } else if (filtroHistorias === 'populares') {
+          endpoint = '/publicaciones/explorar';
+        }
+      }
+
+      const { data } = await api.get(endpoint, { params });
       setPublicaciones(data.datos || []);
       setPagina(data.pagina || 1);
       setTotalPaginas(data.totalPaginas || 1);
       setEstado('listo');
     } catch (error) {
-      setPublicaciones(publicacionesDemo);
+      setPublicaciones(filtroHistorias === 'siguiendo' ? [] : publicacionesDemo);
       setPagina(1);
       setTotalPaginas(1);
       setEstado('listo');
       toast.error(getErrorMessage(error));
     }
-  }, [tipo, token]);
+  }, [filtroHistorias, tipo, token]);
 
   useEffect(() => {
     cargar(1);
   }, [cargar]);
+
+  if (tipo === 'explorar') {
+    return (
+      <section className="stories-view">
+        <div className="stories-header">
+          <span className="section-label">Historias</span>
+          <h1>Historias</h1>
+          <p>Un feed directo para leer publicaciones, descubrir autores y seguir conversaciones.</p>
+        </div>
+        <div className="stories-filters">
+          <button className={filtroHistorias === 'recientes' ? 'active' : ''} onClick={() => setFiltroHistorias('recientes')}>Recientes</button>
+          <button className={filtroHistorias === 'para-ti' ? 'active' : ''} onClick={() => setFiltroHistorias('para-ti')}>Para ti</button>
+          <button className={filtroHistorias === 'siguiendo' ? 'active' : ''} onClick={() => setFiltroHistorias('siguiendo')}>Siguiendo</button>
+          <button className={filtroHistorias === 'populares' ? 'active' : ''} onClick={() => setFiltroHistorias('populares')}>Populares</button>
+        </div>
+        <StoriesList publicaciones={publicaciones} estado={estado} filtro={filtroHistorias} onRefresh={() => cargar(pagina)} />
+        {totalPaginas > 1 && (
+          <div className="pagination">
+            <button disabled={pagina <= 1} onClick={() => cargar(pagina - 1)}>{t('anterior')}</button>
+            <span>{pagina} / {totalPaginas}</span>
+            <button disabled={pagina >= totalPaginas} onClick={() => cargar(pagina + 1)}>{t('siguiente')}</button>
+          </div>
+        )}
+      </section>
+    );
+  }
 
   return (
     <section className="view home-view">
@@ -319,6 +384,49 @@ function Feed({ tipo }) {
         </div>
       )}
     </section>
+  );
+}
+
+function StoriesList({ publicaciones, estado, filtro, onRefresh }) {
+  if (estado === 'cargando') return <div className="status">Cargando historias...</div>;
+  if (estado === 'error') return <button className="retry" onClick={onRefresh}>Reintentar</button>;
+  if (!publicaciones.length && filtro === 'siguiendo') return <EmptyState title="Aún no sigues a nadie" text="Sigue autores desde su perfil para ver aquí sus publicaciones." />;
+
+  return (
+    <div className="stories-list">
+      {(publicaciones.length ? publicaciones : publicacionesDemo).map((publicacion) => (
+        <StoryRow key={publicacion.id} publicacion={publicacion} />
+      ))}
+    </div>
+  );
+}
+
+function StoryRow({ publicacion }) {
+  const imagen = Array.isArray(publicacion.imagenes) ? publicacion.imagenes[0] : null;
+  const contenido = plainText(publicacion.contenido || '');
+
+  return (
+    <article className="story-row">
+      <Avatar usuario={publicacion.autor} />
+      <div className="story-row-main">
+        <Link className="author-row" to={`/perfil/${publicacion.autor?.nombreUsuario || ''}`}>
+          <strong>{publicacion.autor?.nombreUsuario || 'Autor'}</strong>
+          <span>@{publicacion.autor?.nombreUsuario || 'autor'}</span>
+        </Link>
+        {publicacion.demo ? <h2>{publicacion.titulo}</h2> : <Link to={`/publicacion/${publicacion.id}`}><h2>{publicacion.titulo}</h2></Link>}
+        <p>{contenido.slice(0, 230)}{contenido.length > 230 ? '...' : ''}</p>
+        {imagen && <img className="story-row-image" src={assetUrl(imagen)} alt="" />}
+        <div className="story-row-meta">
+          <div className="tag-row">
+            {(publicacion.etiquetas || []).slice(0, 4).map((etiqueta) => <span key={etiqueta.id}>#{etiqueta.nombre}</span>)}
+          </div>
+          <div className="metric-row">
+            <span><Heart size={16} />{publicacion.totalMeGustas || publicacion.meGustas?.length || 0}</span>
+            <span><MessageCircle size={16} />{publicacion.totalComentarios || publicacion.comentarios?.length || 0}</span>
+          </div>
+        </div>
+      </div>
+    </article>
   );
 }
 
@@ -402,23 +510,30 @@ function FeaturedCarousel({ publicaciones }) {
 }
 
 function ProductMockup({ publicacion }) {
+  const etiquetas = (publicacion.etiquetas || []).slice(0, 4);
+  const autor = publicacion.autor?.nombreUsuario || 'autor';
+
   return (
-    <div className="product-mockup">
-      <div className="mock-phone">
-        <div className="mock-status" />
-        <div className="mock-card primary">
-          <span>Match editorial</span>
-          <strong>{publicacion.titulo}</strong>
-        </div>
-        <div className="mock-actions">
-          <span>No</span>
-          <span>Guardar</span>
-          <span>Leer</span>
+    <article className="publication-visual">
+      <div className="publication-visual-header">
+        <Avatar usuario={publicacion.autor} />
+        <div>
+          <strong>@{autor}</strong>
+          <span>Publicación destacada</span>
         </div>
       </div>
-      <div className="mock-card floating one">Afinidad 92%</div>
-      <div className="mock-card floating two">Nuevo autor</div>
-    </div>
+      <h3>{publicacion.titulo}</h3>
+      <p>{plainText(publicacion.contenido).slice(0, 260)}{plainText(publicacion.contenido).length > 260 ? '...' : ''}</p>
+      {etiquetas.length > 0 && (
+        <div className="tag-row">
+          {etiquetas.map((etiqueta) => <span key={etiqueta.id || etiqueta.nombre}>#{etiqueta.nombre}</span>)}
+        </div>
+      )}
+      <div className="publication-visual-footer">
+        <span><Heart size={16} />{publicacion.totalMeGustas || 0}</span>
+        <span><MessageCircle size={16} />{publicacion.totalComentarios || 0}</span>
+      </div>
+    </article>
   );
 }
 
@@ -490,6 +605,7 @@ function Buscar() {
   const buscar = useCallback(async (valor) => {
     if (!valor.trim()) return;
     setEstado('cargando');
+    guardarInteresesLocales(valor);
     setParams({ q: valor });
     try {
       const [posts, users] = await Promise.all([
@@ -663,6 +779,7 @@ function EditorPublicacion() {
 function DetallePublicacion() {
   const { id } = useParams();
   const { token, usuario } = useAuth();
+  const navigate = useNavigate();
   const [post, setPost] = useState(null);
   const [estado, setEstado] = useState('cargando');
   const [comentario, setComentario] = useState('');
@@ -720,43 +837,76 @@ function DetallePublicacion() {
     }
   };
 
+  const eliminarPublicacion = async () => {
+    if (!window.confirm('¿Seguro que quieres eliminar esta publicación? Esta acción no se puede deshacer.')) return;
+
+    try {
+      await api.delete(`/publicaciones/${id}`);
+      toast.success('Publicación eliminada');
+      navigate('/');
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+    }
+  };
+
+  const hacerPrivada = async () => {
+    try {
+      await api.put(`/publicaciones/${id}`, { esBorrador: true });
+      toast.success('Publicación marcada como privada');
+      navigate('/borradores');
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+    }
+  };
+
   if (estado === 'cargando') return <div className="status">Cargando publicación...</div>;
   if (estado === 'error' || !post) return <EmptyState title="No se pudo cargar" text="La publicación no está disponible." />;
 
   const imagenes = Array.isArray(post.imagenes) ? post.imagenes : [];
+  const esAutor = usuario?.id === post.usuarioId;
 
   return (
     <article className="article-view">
-      <Link className="author-row" to={`/perfil/${post.autor?.nombreUsuario}`}>
-        <Avatar usuario={post.autor} />
-        <span>{post.autor?.nombreUsuario}</span>
-      </Link>
-      <h1>{post.titulo}</h1>
-      <div className="tag-row">{(post.etiquetas || []).map((tag) => <span key={tag.id}>#{tag.nombre}</span>)}</div>
-      {imagenes.length > 0 && <img className="article-cover" src={assetUrl(imagenes[0])} alt="" />}
-      <div className="article-content"><ReactMarkdown remarkPlugins={[remarkGfm]}>{post.contenido}</ReactMarkdown></div>
-      <div className="article-actions">
-        <button className={post.leGusta ? 'active' : ''} disabled={!token} onClick={toggleLike}><Heart size={18} />{post.totalMeGustas || 0}</button>
-        <button disabled={!token} onClick={guardar}><Bookmark size={18} />Guardar</button>
-        {usuario?.id === post.usuarioId && <Link to="/escribir"><Edit3 size={18} />Editar</Link>}
-      </div>
-      <section className="comments">
-        <h2>Comentarios</h2>
-        {token ? (
-          <form onSubmit={comentar} className="comment-form">
-            <textarea value={comentario} onChange={(e) => setComentario(e.target.value)} placeholder="Suma una idea..." required />
-            <button>Comentar</button>
-          </form>
-        ) : (
-          <p><Link to="/login">Entra</Link> para comentar.</p>
-        )}
-        {(post.comentarios || []).map((item) => (
-          <div className="comment" key={item.id}>
-            <Avatar usuario={item.usuario} />
-            <div><strong>{item.usuario?.nombreUsuario}</strong><p>{item.contenido}</p></div>
+      <header className="article-header">
+        <Link className="author-row" to={`/perfil/${post.autor?.nombreUsuario}`}>
+          <Avatar usuario={post.autor} />
+          <span>{post.autor?.nombreUsuario}</span>
+        </Link>
+        <h1>{post.titulo}</h1>
+        {(post.etiquetas || []).length > 0 && <div className="tag-row">{post.etiquetas.map((tag) => <span key={tag.id}>#{tag.nombre}</span>)}</div>}
+        {imagenes.length > 0 && <img className="article-cover" src={assetUrl(imagenes[0])} alt="" />}
+      </header>
+
+      <div className="article-layout">
+        <section className="article-main">
+          <div className="article-content"><ReactMarkdown remarkPlugins={[remarkGfm]}>{post.contenido}</ReactMarkdown></div>
+          <div className="article-actions">
+            <button className={post.leGusta ? 'active' : ''} disabled={!token} onClick={toggleLike}><Heart size={18} />{post.totalMeGustas || 0}</button>
+            <button disabled={!token} onClick={guardar}><Bookmark size={18} />Guardar</button>
+            {esAutor && <Link to="/escribir"><Edit3 size={18} />Editar</Link>}
+            {esAutor && <button type="button" onClick={hacerPrivada}><Lock size={18} />Poner privada</button>}
+            {esAutor && <button type="button" className="danger-button" onClick={eliminarPublicacion}><Trash2 size={18} />Eliminar</button>}
           </div>
-        ))}
-      </section>
+        </section>
+
+        <section className="comments">
+          <h2>Comentarios</h2>
+          {token ? (
+            <form onSubmit={comentar} className="comment-form">
+              <textarea value={comentario} onChange={(e) => setComentario(e.target.value)} placeholder="Suma una idea..." required />
+              <button>Comentar</button>
+            </form>
+          ) : (
+            <p><Link to="/login">Entra</Link> para comentar.</p>
+          )}
+          {(post.comentarios || []).map((item) => (
+            <div className="comment" key={item.id}>
+              <Avatar usuario={item.usuario} />
+              <div><strong>{item.usuario?.nombreUsuario}</strong><p>{item.contenido}</p></div>
+            </div>
+          ))}
+        </section>
+      </div>
     </article>
   );
 }

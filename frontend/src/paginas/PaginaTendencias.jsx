@@ -33,8 +33,10 @@ export default function TrendsPage() {
           {posts.map((post, index) => (
             <article key={post.id}>
               <span>{String(index + 1).padStart(2, '0')}</span>
-              <h2>{post.titulo}</h2>
-              <p>{plainText(post.contenido || '').slice(0, 130)}</p>
+              <div>
+                <h2>{post.titulo}</h2>
+                <p>{plainText(post.contenido || '').slice(0, 240)}</p>
+              </div>
             </article>
           ))}
         </div>
