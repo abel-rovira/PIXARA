@@ -11,6 +11,7 @@
   --soft:        #f8f9fa;
   --soft-2:      #f3f4f6;
   --paper:       #ffffff;
+  --topbar-bg:   rgba(255, 255, 255, 0.92);
 
   /* Brand accent — deep forest green, nothing generic */
   --accent:      #2d5a3d;
@@ -39,6 +40,33 @@
   --ease-in-out:   cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+[data-theme='oscuro'] {
+  --ink:         #f6f7fb;
+  --ink-2:       #e5e7eb;
+  --muted:       #a6adbb;
+  --muted-2:     #7f8795;
+  --line:        #28303a;
+  --line-2:      #202832;
+  --soft:        #121821;
+  --soft-2:      #19212b;
+  --paper:       #080c12;
+  --topbar-bg:   rgba(8, 12, 18, 0.9);
+  --accent:      #7cc69a;
+  --accent-mid:  #98dab0;
+  --accent-light:#14251b;
+  --accent-warm: #264937;
+  --hi:          #f2bf5f;
+  --hi-light:    #322714;
+  --shadow-xs:   0 1px 3px rgba(0,0,0,.28);
+  --shadow-sm:   0 4px 16px rgba(0,0,0,.32);
+  --shadow-md:   0 12px 40px rgba(0,0,0,.38);
+  --shadow-lg:   0 32px 80px rgba(0,0,0,.48);
+}
+
+[data-theme='oscuro'] img {
+  filter: saturate(0.94) brightness(0.92);
+}
+
 /* ─── Reset & Base ───────────────────────────────────────────────────────── */
 *, *::before, *::after {
   box-sizing: border-box;
@@ -61,6 +89,7 @@ body {
   font-weight: 400;
   line-height: 1.6;
   overflow-x: hidden;
+  transition: background 0.2s, color 0.2s;
 }
 
 a {
@@ -91,12 +120,12 @@ img {
 /* ─── Topbar ─────────────────────────────────────────────────────────────── */
 .topbar {
   align-items: center;
-  background: rgba(255, 255, 255, 0.92);
+  background: var(--topbar-bg);
   backdrop-filter: blur(16px) saturate(180%);
   -webkit-backdrop-filter: blur(16px) saturate(180%);
   border-bottom: 1px solid var(--line);
   display: grid;
-  grid-template-columns: 200px minmax(0, 1fr) 200px;
+  grid-template-columns: 200px minmax(0, 1fr) 260px;
   height: 68px;
   padding: 0 clamp(24px, 4vw, 80px);
   position: sticky;
@@ -189,6 +218,38 @@ img {
 
 .top-search {
   justify-self: end;
+}
+
+.top-controls {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.top-icon-button,
+.language-button,
+.menu-button {
+  align-items: center;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  color: var(--ink);
+  display: inline-flex;
+  height: 38px;
+  justify-content: center;
+  min-width: 38px;
+  padding: 0 10px;
+}
+
+.language-button {
+  gap: 7px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.menu-button {
+  display: none;
 }
 
 /* ─── View ───────────────────────────────────────────────────────────────── */
@@ -406,6 +467,20 @@ img {
   transition: box-shadow 0.2s, color 0.2s, transform 0.2s var(--ease-out-expo);
   width: 44px;
   z-index: 6;
+}
+
+[data-theme='oscuro'] .carousel-arrow,
+[data-theme='oscuro'] .top-icon-button,
+[data-theme='oscuro'] .language-button,
+[data-theme='oscuro'] .menu-button {
+  background: var(--soft);
+}
+
+[data-theme='oscuro'] .carousel-visual img,
+[data-theme='oscuro'] .article-cover,
+[data-theme='oscuro'] .avatar,
+[data-theme='oscuro'] .avatar-preview {
+  filter: none;
 }
 
 .carousel-prev { left: 20px; }
@@ -1602,7 +1677,51 @@ textarea {
   }
 
   .nav-actions {
+    align-items: stretch;
+    background: var(--topbar-bg);
+    border-bottom: 1px solid var(--line);
     display: none;
+    gap: 0;
+    grid-column: 1 / -1;
+    justify-content: start;
+    margin: 14px -20px -14px;
+    padding: 8px 20px 16px;
+  }
+
+  .nav-actions.is-open {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .nav-actions a,
+  .nav-actions .text-button {
+    border-bottom: 1px solid var(--line-2);
+    height: 44px;
+    justify-content: flex-start;
+  }
+
+  .nav-actions a::after {
+    display: none;
+  }
+
+  .top-controls {
+    gap: 6px;
+  }
+
+  .top-icon-button,
+  .language-button,
+  .top-search,
+  .menu-button {
+    height: 38px;
+    min-width: 38px;
+  }
+
+  .language-button {
+    padding: 0 8px;
+  }
+
+  .menu-button {
+    display: inline-flex;
   }
 
   .featured-carousel {
@@ -1646,6 +1765,14 @@ textarea {
 
   .cookie-banner {
     grid-template-columns: 1fr;
+  }
+
+  .nav-actions.is-open {
+    grid-template-columns: 1fr;
+  }
+
+  .top-controls {
+    max-width: 210px;
   }
 
   .trend-board article {

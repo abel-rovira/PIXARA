@@ -10,11 +10,16 @@ import {
   ChevronRight,
   Cookie,
   Edit3,
+  Globe2,
   Heart,
+  Menu,
   MessageCircle,
+  Moon,
   Search,
+  Sun,
   Trash2,
   UserPlus,
+  X,
 } from 'lucide-react';
 import OAuthButtons from './componentes/autenticacion/BotonesOAuth';
 import Footer from './componentes/estructura/PiePagina';
@@ -38,9 +43,42 @@ import SupportPage from './paginas/PaginaSoporte';
 import TrendsPage from './paginas/PaginaTendencias';
 import { api, getErrorMessage, setAuthToken } from './servicios/clienteApi';
 import { getCurrentUser, login, register } from './servicios/servicioAutenticacion';
+import { traducciones } from './idiomas/traducciones';
 import { assetUrl, plainText } from './utilidades/formateadores';
 
 const AuthContext = createContext(null);
+const PreferenciasContext = createContext(null);
+
+function PreferenciasProvider({ children }) {
+  const [tema, setTema] = useState(() => localStorage.getItem('pixara_tema') || 'claro');
+  const [idioma, setIdioma] = useState(() => localStorage.getItem('pixara_idioma') || 'es');
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = tema;
+    localStorage.setItem('pixara_tema', tema);
+  }, [tema]);
+
+  useEffect(() => {
+    document.documentElement.lang = idioma;
+    localStorage.setItem('pixara_idioma', idioma);
+  }, [idioma]);
+
+  const t = useCallback((clave) => traducciones[idioma]?.[clave] || traducciones.es[clave] || clave, [idioma]);
+  const alternarTema = useCallback(() => setTema((actual) => (actual === 'oscuro' ? 'claro' : 'oscuro')), []);
+  const alternarIdioma = useCallback(() => setIdioma((actual) => (actual === 'es' ? 'en' : 'es')), []);
+
+  const value = useMemo(
+    () => ({ tema, idioma, t, alternarTema, alternarIdioma }),
+    [tema, idioma, t, alternarTema, alternarIdioma]
+  );
+
+  return <PreferenciasContext.Provider value={value}>{children}</PreferenciasContext.Provider>;
+}
+
+function usePreferencias() {
+  return useContext(PreferenciasContext);
+}
+
 function AuthProvider({ children }) {
   const [token, setToken] = useState(() => localStorage.getItem('pixara_token') || '');
   const [usuario, setUsuario] = useState(() => {
@@ -104,42 +142,58 @@ function PrivateRoute({ children }) {
 
 function Layout() {
   const { usuario, token, cerrarSesion } = useAuth();
+  const { tema, idioma, t, alternarTema, alternarIdioma } = usePreferencias();
   const navigate = useNavigate();
   const [cookiesAceptadas, setCookiesAceptadas] = useState(() => localStorage.getItem('pixara_cookies') === 'aceptadas');
+  const [menuAbierto, setMenuAbierto] = useState(false);
 
   const logout = () => {
     cerrarSesion();
-    toast.success('Sesión cerrada');
+    toast.success(t('sesionCerrada'));
+    setMenuAbierto(false);
     navigate('/');
   };
+
+  const cerrarMenu = () => setMenuAbierto(false);
 
   return (
     <div className="app-shell">
       <header className="topbar">
         <Link className="brand" to="/">pixara</Link>
-        <nav className="nav-actions">
-          <Link to="/">Inicio</Link>
-          <Link to="/explorar">Historias</Link>
-          <Link to="/producto">Producto</Link>
-          <Link to="/comunidad">Comunidad</Link>
-          <Link to="/tendencias">Tendencias</Link>
-          <Link to="/creadores">Creadores</Link>
-          {token && <Link to="/escribir">Escribir</Link>}
+        <nav className={`nav-actions ${menuAbierto ? 'is-open' : ''}`}>
+          <Link onClick={cerrarMenu} to="/">{t('inicio')}</Link>
+          <Link onClick={cerrarMenu} to="/explorar">{t('historias')}</Link>
+          <Link onClick={cerrarMenu} to="/producto">{t('producto')}</Link>
+          <Link onClick={cerrarMenu} to="/comunidad">{t('comunidad')}</Link>
+          <Link onClick={cerrarMenu} to="/tendencias">{t('tendencias')}</Link>
+          <Link onClick={cerrarMenu} to="/creadores">{t('creadores')}</Link>
+          {token && <Link onClick={cerrarMenu} to="/escribir">{t('escribir')}</Link>}
           {token && usuario ? (
             <>
-              <Link to="/guardados">Guardados</Link>
-              <Link to="/notificaciones">Avisos</Link>
-              <Link to={`/perfil/${usuario.nombreUsuario}`}>Perfil</Link>
-              <button className="text-button" onClick={logout} title="Cerrar sesión">Salir</button>
+              <Link onClick={cerrarMenu} to="/guardados">{t('guardados')}</Link>
+              <Link onClick={cerrarMenu} to="/notificaciones">{t('avisos')}</Link>
+              <Link onClick={cerrarMenu} to={`/perfil/${usuario.nombreUsuario}`}>{t('perfil')}</Link>
+              <button className="text-button" onClick={logout} title={t('salir')}>{t('salir')}</button>
             </>
           ) : (
             <>
-              <Link to="/login">Entrar</Link>
-              <Link to="/registro">Registrarse</Link>
+              <Link onClick={cerrarMenu} to="/login">{t('entrar')}</Link>
+              <Link onClick={cerrarMenu} to="/registro">{t('registrarse')}</Link>
             </>
           )}
         </nav>
-        <Link className="top-search" to="/buscar" aria-label="Buscar"><Search size={24} /></Link>
+        <div className="top-controls">
+          <button className="top-icon-button" type="button" onClick={alternarTema} aria-label={tema === 'oscuro' ? t('temaClaro') : t('temaOscuro')} title={tema === 'oscuro' ? t('temaClaro') : t('temaOscuro')}>
+            {tema === 'oscuro' ? <Sun size={20} /> : <Moon size={20} />}
+          </button>
+          <button className="language-button" type="button" onClick={alternarIdioma} aria-label={t('cambiarIdioma')} title={t('cambiarIdioma')}>
+            <Globe2 size={18} />{idioma.toUpperCase()}
+          </button>
+          <Link className="top-search" to="/buscar" aria-label={t('buscar')} onClick={cerrarMenu}><Search size={22} /></Link>
+          <button className="menu-button" type="button" onClick={() => setMenuAbierto((actual) => !actual)} aria-label={menuAbierto ? t('cerrarMenu') : t('abrirMenu')}>
+            {menuAbierto ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
       </header>
       <main className="main">
         <Routes>
@@ -180,28 +234,32 @@ function Layout() {
 }
 
 function CookieBanner({ onAccept }) {
+  const { t } = usePreferencias();
   return (
     <aside className="cookie-banner">
       <div className="cookie-icon"><Cookie size={22} /></div>
       <div>
-        <strong>Usamos cookies para mejorar Pixara</strong>
-        <p>Guardamos preferencias básicas y datos de uso para que la experiencia sea más cómoda y relevante.</p>
+        <strong>{t('cookiesTitulo')}</strong>
+        <p>{t('cookiesTexto')}</p>
       </div>
-      <button type="button" onClick={onAccept}>Aceptar</button>
+      <button type="button" onClick={onAccept}>{t('aceptar')}</button>
     </aside>
   );
 }
 
 function App() {
   return (
-    <AuthProvider>
-      <Layout />
-    </AuthProvider>
+    <PreferenciasProvider>
+      <AuthProvider>
+        <Layout />
+      </AuthProvider>
+    </PreferenciasProvider>
   );
 }
 
 function Feed({ tipo }) {
   const { token } = useAuth();
+  const { t } = usePreferencias();
   const [publicaciones, setPublicaciones] = useState([]);
   const [estado, setEstado] = useState('cargando');
   const [pagina, setPagina] = useState(1);
@@ -234,8 +292,8 @@ function Feed({ tipo }) {
       <FeaturedCarousel publicaciones={publicaciones.length ? publicaciones : publicacionesDemo} />
       <TopicRail />
       <div className="section-heading">
-        <h1>{tipo === 'explorar' ? 'Explora lo nuevo' : 'Más historias nuevas'}</h1>
-        <Link className="hero-secondary" to={token ? '/escribir' : '/registro'}>{token ? 'Publicar' : 'Únete'}<ArrowRight size={18} /></Link>
+        <h1>{tipo === 'explorar' ? t('exploraNuevo') : t('masHistorias')}</h1>
+        <Link className="hero-secondary" to={token ? '/escribir' : '/registro'}>{token ? t('publicar') : t('unete')}<ArrowRight size={18} /></Link>
       </div>
       <PostGrid publicaciones={publicaciones} estado={estado} onRefresh={() => cargar(pagina)} />
       <LiveStats />
@@ -245,9 +303,9 @@ function Feed({ tipo }) {
 
       {totalPaginas > 1 && (
         <div className="pagination">
-          <button disabled={pagina <= 1} onClick={() => cargar(pagina - 1)}>Anterior</button>
+          <button disabled={pagina <= 1} onClick={() => cargar(pagina - 1)}>{t('anterior')}</button>
           <span>{pagina} / {totalPaginas}</span>
-          <button disabled={pagina >= totalPaginas} onClick={() => cargar(pagina + 1)}>Siguiente</button>
+          <button disabled={pagina >= totalPaginas} onClick={() => cargar(pagina + 1)}>{t('siguiente')}</button>
         </div>
       )}
     </section>
@@ -281,6 +339,7 @@ function DiscoverSection() {
 }
 
 function FeaturedCarousel({ publicaciones }) {
+  const { t } = usePreferencias();
   const items = publicaciones.slice(0, 5);
   const [actual, setActual] = useState(0);
 
@@ -301,13 +360,13 @@ function FeaturedCarousel({ publicaciones }) {
 
   return (
     <section className="featured-carousel">
-      <button className="carousel-arrow carousel-prev" type="button" onClick={anterior} aria-label="Anterior"><ChevronLeft size={26} /></button>
-      <button className="carousel-arrow carousel-next" type="button" onClick={siguiente} aria-label="Siguiente"><ChevronRight size={26} /></button>
+      <button className="carousel-arrow carousel-prev" type="button" onClick={anterior} aria-label={t('anterior')}><ChevronLeft size={26} /></button>
+      <button className="carousel-arrow carousel-next" type="button" onClick={siguiente} aria-label={t('siguiente')}><ChevronRight size={26} /></button>
       <div className="carousel-copy">
         <span className="carousel-kicker">Pixara Discovery</span>
         <h2>{publicacion.titulo}</h2>
         <Link className="carousel-cta" to={publicacion.demo ? '/registro' : `/publicacion/${publicacion.id}`}>
-          {publicacion.demo ? 'Empezar ahora' : 'Leer ahora'} <ArrowRight size={20} />
+          {publicacion.demo ? t('empezarAhora') : t('leerAhora')} <ArrowRight size={20} />
         </Link>
         <p>{plainText(publicacion.contenido).slice(0, 180)}{plainText(publicacion.contenido).length > 180 ? '...' : ''}</p>
         <div className="tag-row">
@@ -411,6 +470,7 @@ function PostCard({ publicacion }) {
 }
 
 function Buscar() {
+  const { t } = usePreferencias();
   const [params, setParams] = useSearchParams();
   const [termino, setTermino] = useState(params.get('q') || '');
   const [publicaciones, setPublicaciones] = useState([]);
@@ -443,15 +503,15 @@ function Buscar() {
   return (
     <section className="view">
       <div className="section-heading">
-        <h1>Buscar</h1>
+        <h1>{t('buscarTitulo')}</h1>
         <form className="search-form" onSubmit={(event) => { event.preventDefault(); buscar(termino); }}>
           <Search size={20} />
-          <input value={termino} onChange={(event) => setTermino(event.target.value)} placeholder="Historias, autores o temas" />
-          <button>Buscar</button>
+          <input value={termino} onChange={(event) => setTermino(event.target.value)} placeholder={t('buscarPlaceholder')} />
+          <button>{t('buscar')}</button>
         </form>
       </div>
-      {estado === 'idle' && <EmptyState title="Empieza con una palabra" text="Busca por título, contenido, nombre de usuario o biografía." />}
-      {estado === 'cargando' && <div className="status">Buscando...</div>}
+      {estado === 'idle' && <EmptyState title={t('buscarVacioTitulo')} text={t('buscarVacioTexto')} />}
+      {estado === 'cargando' && <div className="status">{t('buscando')}</div>}
       {estado === 'listo' && (
         <>
           <UserList usuarios={usuarios} />
@@ -463,6 +523,7 @@ function Buscar() {
 }
 
 function AuthForm({ modo }) {
+  const { t } = usePreferencias();
   const esLogin = modo === 'login';
   const { guardarSesion, token } = useAuth();
   const navigate = useNavigate();
@@ -480,7 +541,7 @@ function AuthForm({ modo }) {
         : { nombreUsuario: form.nombreUsuario, correo: form.correo, contrasena: form.contrasena };
       const { data } = await (esLogin ? login(payload) : register(payload));
       guardarSesion(data.datos);
-      toast.success(esLogin ? 'Bienvenido de nuevo' : 'Cuenta creada');
+      toast.success(esLogin ? t('bienvenido') : t('cuentaCreada'));
       navigate('/');
     } catch (error) {
       toast.error(getErrorMessage(error));
@@ -492,24 +553,25 @@ function AuthForm({ modo }) {
   return (
     <section className="auth-view">
       <form className="form-panel" onSubmit={submit}>
-        <h1>{esLogin ? 'Entrar' : 'Crear cuenta'}</h1>
+        <h1>{esLogin ? t('entrar') : t('crearCuenta')}</h1>
         {!esLogin && (
           <>
-            <label>Usuario<input value={form.nombreUsuario} onChange={(e) => setForm({ ...form, nombreUsuario: e.target.value })} required minLength={3} /></label>
-            <label>Correo<input type="email" value={form.correo} onChange={(e) => setForm({ ...form, correo: e.target.value })} required /></label>
+            <label>{t('usuario')}<input value={form.nombreUsuario} onChange={(e) => setForm({ ...form, nombreUsuario: e.target.value })} required minLength={3} /></label>
+            <label>{t('correo')}<input type="email" value={form.correo} onChange={(e) => setForm({ ...form, correo: e.target.value })} required /></label>
           </>
         )}
-        {esLogin && <label>Usuario o correo<input value={form.identificador} onChange={(e) => setForm({ ...form, identificador: e.target.value })} required /></label>}
-        <label>Contraseña<input type="password" value={form.contrasena} onChange={(e) => setForm({ ...form, contrasena: e.target.value })} required minLength={6} /></label>
-        <button disabled={enviando}>{enviando ? 'Enviando...' : esLogin ? 'Entrar' : 'Registrarme'}</button>
+        {esLogin && <label>{t('usuarioOCorreo')}<input value={form.identificador} onChange={(e) => setForm({ ...form, identificador: e.target.value })} required /></label>}
+        <label>{t('contrasena')}<input type="password" value={form.contrasena} onChange={(e) => setForm({ ...form, contrasena: e.target.value })} required minLength={6} /></label>
+        <button disabled={enviando}>{enviando ? t('enviando') : esLogin ? t('entrar') : t('registrarme')}</button>
         <OAuthButtons />
-        <p>{esLogin ? '¿No tienes cuenta?' : '¿Ya tienes cuenta?'} <Link to={esLogin ? '/registro' : '/login'}>{esLogin ? 'Regístrate' : 'Entra'}</Link></p>
+        <p>{esLogin ? t('noTienesCuenta') : t('yaTienesCuenta')} <Link to={esLogin ? '/registro' : '/login'}>{esLogin ? t('registrate') : t('entrar')}</Link></p>
       </form>
     </section>
   );
 }
 
 function EditorPublicacion() {
+  const { t } = usePreferencias();
   const navigate = useNavigate();
   const [form, setForm] = useState({ titulo: '', contenido: '', etiquetas: '', esBorrador: false });
   const [imagenes, setImagenes] = useState([]);
@@ -526,7 +588,7 @@ function EditorPublicacion() {
     Array.from(imagenes).forEach((file) => data.append('imagenes', file));
     try {
       const response = await api.post('/publicaciones', data, { headers: { 'Content-Type': 'multipart/form-data' } });
-      toast.success(form.esBorrador ? 'Borrador guardado' : 'Publicación creada');
+      toast.success(form.esBorrador ? t('borradorGuardado') : t('publicacionCreada'));
       navigate(`/publicacion/${response.data.datos.id}`);
     } catch (error) {
       toast.error(getErrorMessage(error));
@@ -539,19 +601,19 @@ function EditorPublicacion() {
     <section className="view narrow">
       <form className="editor" onSubmit={submit}>
         <div className="section-heading">
-          <h1>Escribir</h1>
-          <button disabled={enviando}>{enviando ? 'Guardando...' : 'Publicar'}</button>
+          <h1>{t('escribir')}</h1>
+          <button disabled={enviando}>{enviando ? t('guardando') : t('publicar')}</button>
         </div>
-        <input className="title-input" value={form.titulo} onChange={(e) => setForm({ ...form, titulo: e.target.value })} placeholder="Título de la historia" required minLength={5} />
-        <textarea value={form.contenido} onChange={(e) => setForm({ ...form, contenido: e.target.value })} placeholder="Escribe en Markdown..." required minLength={20} />
+        <input className="title-input" value={form.titulo} onChange={(e) => setForm({ ...form, titulo: e.target.value })} placeholder={t('tituloHistoria')} required minLength={5} />
+        <textarea value={form.contenido} onChange={(e) => setForm({ ...form, contenido: e.target.value })} placeholder={t('escribeMarkdown')} required minLength={20} />
         <div className="editor-grid">
-          <label>Etiquetas<input value={form.etiquetas} onChange={(e) => setForm({ ...form, etiquetas: e.target.value })} placeholder="react, viajes, ideas" /></label>
-          <label>Imágenes<input type="file" accept="image/*" multiple onChange={(e) => setImagenes(e.target.files)} /></label>
+          <label>{t('etiquetas')}<input value={form.etiquetas} onChange={(e) => setForm({ ...form, etiquetas: e.target.value })} placeholder="react, viajes, ideas" /></label>
+          <label>{t('imagenes')}<input type="file" accept="image/*" multiple onChange={(e) => setImagenes(e.target.files)} /></label>
         </div>
-        <label className="check-row"><input type="checkbox" checked={form.esBorrador} onChange={(e) => setForm({ ...form, esBorrador: e.target.checked })} />Guardar como borrador</label>
+        <label className="check-row"><input type="checkbox" checked={form.esBorrador} onChange={(e) => setForm({ ...form, esBorrador: e.target.checked })} />{t('guardarBorrador')}</label>
         <div className="markdown-preview">
-          <h2>Vista previa</h2>
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>{form.contenido || 'Tu contenido aparecerá aquí.'}</ReactMarkdown>
+          <h2>{t('vistaPrevia')}</h2>
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>{form.contenido || t('contenidoPreview')}</ReactMarkdown>
         </div>
       </form>
     </section>
@@ -794,7 +856,8 @@ function EmptyState({ title, text }) {
 }
 
 function NotFound() {
-  return <EmptyState title="Página no encontrada" text="La ruta solicitada no existe." />;
+  const { t } = usePreferencias();
+  return <EmptyState title={t('paginaNoEncontrada')} text={t('rutaNoExiste')} />;
 }
 
 export default App;
