@@ -1,5 +1,14 @@
 <div align="center">
-  <h1>PIXARA</h1>
+  <h1>
+    PIXARA
+    <img
+      width="70"
+      alt="logo192"
+      src="https://github.com/user-attachments/assets/80ee0f11-c0da-451b-be05-2251768cd5ab"
+      style="vertical-align: middle; margin-left: 10px;"
+    />
+  </h1>
+
   <p><strong>Plataforma social/editorial para escribir, descubrir historias, seguir autores y crear comunidad alrededor de ideas.</strong></p>
 </div>
 
