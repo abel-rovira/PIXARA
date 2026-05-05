@@ -1,7 +1,3 @@
-
-
-
-
 <div align="center">
   <h1>PIXARA</h1>
   <p><strong>Plataforma social/editorial para escribir, descubrir historias, seguir autores y crear comunidad alrededor de ideas.</strong></p>
@@ -41,7 +37,7 @@ El proyecto está orientado a una experiencia visual limpia, blanca, editorial y
 
 ## Video de PIXARA
 
-https://github.com/user-attachments/assets/3185ec2f-beab-48eb-bd18-f751030afbfa
+https://github.com/user-attachments/assets/2d09712d-ff4a-4b9c-a145-a6be93db9075
 
 ---
 
