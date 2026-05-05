@@ -1,6 +1,6 @@
 <div align="center">
   <img width="119" height="45" alt="PIXARA" src="https://github.com/user-attachments/assets/80ee0f11-c0da-451b-be05-2251768cd5ab"/>
-  <br><br>
+  <br>
   <p><strong>Plataforma social/editorial para escribir, descubrir historias, seguir autores y crear comunidad alrededor de ideas.</strong></p>
 </div>
 
