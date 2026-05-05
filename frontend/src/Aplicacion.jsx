@@ -13,6 +13,7 @@ import {
   Heart,
   MessageCircle,
   Search,
+  Trash2,
   UserPlus,
 } from 'lucide-react';
 import OAuthButtons from './componentes/autenticacion/BotonesOAuth';
@@ -665,6 +666,7 @@ function Perfil() {
   const [estado, setEstado] = useState('cargando');
   const [editando, setEditando] = useState(false);
   const [form, setForm] = useState({ nombreUsuario: '', correo: '', biografia: '' });
+  const [avatarArchivo, setAvatarArchivo] = useState(null);
 
   const cargar = useCallback(async () => {
     setEstado('cargando');
@@ -707,12 +709,26 @@ function Perfil() {
     data.append('nombreUsuario', form.nombreUsuario);
     data.append('correo', form.correo);
     data.append('biografia', form.biografia);
+    if (avatarArchivo) data.append('avatar', avatarArchivo);
     try {
       await api.put('/usuarios/perfil', data);
       toast.success('Perfil actualizado');
+      setAvatarArchivo(null);
       await refrescarUsuario();
       setEditando(false);
       cargar();
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+    }
+  };
+
+  const eliminarAvatar = async () => {
+    try {
+      await api.delete('/usuarios/perfil/avatar');
+      toast.success('Foto de perfil eliminada');
+      setAvatarArchivo(null);
+      await refrescarUsuario();
+      await cargar();
     } catch (error) {
       toast.error(getErrorMessage(error));
     }
@@ -741,8 +757,13 @@ function Perfil() {
         <form className="form-panel inline" onSubmit={guardarPerfil}>
           <label>Usuario<input value={form.nombreUsuario} onChange={(e) => setForm({ ...form, nombreUsuario: e.target.value })} /></label>
           <label>Correo<input type="email" value={form.correo} onChange={(e) => setForm({ ...form, correo: e.target.value })} /></label>
+          <label>Foto de perfil<input type="file" accept="image/*" onChange={(e) => setAvatarArchivo(e.target.files?.[0] || null)} /></label>
+          {avatarArchivo && <img className="avatar-preview" src={URL.createObjectURL(avatarArchivo)} alt="Vista previa del avatar" />}
           <label>Biografía<textarea value={form.biografia} onChange={(e) => setForm({ ...form, biografia: e.target.value })} /></label>
-          <button>Guardar cambios</button>
+          <div className="form-actions">
+            <button>Guardar cambios</button>
+            {perfil.avatar && <button type="button" className="danger-button" onClick={eliminarAvatar}><Trash2 size={18} />Eliminar foto</button>}
+          </div>
         </form>
       )}
       <PostGrid publicaciones={perfil.publicaciones || []} estado="listo" />

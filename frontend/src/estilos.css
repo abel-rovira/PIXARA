@@ -612,6 +612,31 @@ button:hover:not(:disabled) {
   width: 92px;
 }
 
+.avatar-preview {
+  background: var(--accent-light);
+  border: 1px solid var(--line);
+  height: 128px;
+  object-fit: cover;
+  width: 128px;
+}
+
+.form-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.danger-button {
+  color: #b42318;
+}
+
+.danger-button:hover:not(:disabled) {
+  background: #fff5f5;
+  border-color: #fecaca;
+  color: #991b1b;
+}
+
 .post-title {
   color: var(--ink);
   font-family: var(--font-display);
