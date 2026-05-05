@@ -1,5 +1,7 @@
 
 
+
+
 <div align="center">
   <h1>PIXARA</h1>
   <p><strong>Plataforma social/editorial para escribir, descubrir historias, seguir autores y crear comunidad alrededor de ideas.</strong></p>
