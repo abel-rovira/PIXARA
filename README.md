@@ -39,7 +39,7 @@ El proyecto está orientado a una experiencia visual limpia, blanca, editorial y
 
 Puedes añadir un video corto de unos 40 segundos para enseñar la experiencia principal de Pixara.
 
-
+<video src="screenshots/demo-pixara-comprimido.mp4" controls width="100%"></video>
 
 ---
 
