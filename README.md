@@ -35,29 +35,11 @@ El proyecto está orientado a una experiencia visual limpia, blanca, editorial y
 
 ---
 
-## Video Demo
+## Video de PIXARA
 
 Puedes añadir un video corto de unos 40 segundos para enseñar la experiencia principal de Pixara.
 
-Guarda el video en una carpeta, por ejemplo:
 
-```bash
-screenshots/demo-pixara.mp4
-```
-
-Y en GitHub puedes enlazarlo así:
-
-```md
-https://github.com/tu-usuario/tu-repositorio/assets/tu-id/demo-pixara.mp4
-```
-
-O, si prefieres dejarlo dentro del README como referencia local:
-
-```html
-<video src="screenshots/demo-pixara.mp4" controls width="100%"></video>
-```
-
-> Recomendación: graba el video en 1920x1080 o 1366x768, duración aproximada de 40 segundos, mostrando inicio, historias, registro/login, perfil, crear publicación y comentarios.
 
 ---
 
@@ -506,11 +488,6 @@ Próximos pasos recomendados:
 - Tests automatizados.
 - Despliegue completo en producción.
 
----
-
-## Licencia
-
-Distribuido bajo licencia ISC.
 
 ---
 
