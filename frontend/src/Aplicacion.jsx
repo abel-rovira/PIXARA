@@ -18,6 +18,7 @@ import {
   Search,
   Sun,
   Trash2,
+  Upload,
   UserPlus,
   X,
 } from 'lucide-react';
@@ -133,6 +134,15 @@ function AuthProvider({ children }) {
 
 function useAuth() {
   return useContext(AuthContext);
+}
+
+function normalizarEtiquetasTexto(valor) {
+  return String(valor || '')
+    .split(/[\s,]+/)
+    .map((etiqueta) => etiqueta.trim().replace(/^#+/, '').toLowerCase())
+    .filter(Boolean)
+    .filter((etiqueta, index, lista) => lista.indexOf(etiqueta) === index)
+    .slice(0, 10);
 }
 
 function PrivateRoute({ children }) {
@@ -576,6 +586,9 @@ function EditorPublicacion() {
   const [form, setForm] = useState({ titulo: '', contenido: '', etiquetas: '', esBorrador: false });
   const [imagenes, setImagenes] = useState([]);
   const [enviando, setEnviando] = useState(false);
+  const etiquetasPreview = normalizarEtiquetasTexto(form.etiquetas).slice(0, 6);
+  const imagenPreview = Array.from(imagenes || [])[0];
+  const imagenPreviewUrl = imagenPreview ? URL.createObjectURL(imagenPreview) : '';
 
   const submit = async (event) => {
     event.preventDefault();
@@ -583,7 +596,7 @@ function EditorPublicacion() {
     const data = new FormData();
     data.append('titulo', form.titulo);
     data.append('contenido', form.contenido);
-    data.append('etiquetas', form.etiquetas);
+    data.append('etiquetas', normalizarEtiquetasTexto(form.etiquetas).join(','));
     data.append('esBorrador', String(form.esBorrador));
     Array.from(imagenes).forEach((file) => data.append('imagenes', file));
     try {
@@ -598,24 +611,51 @@ function EditorPublicacion() {
   };
 
   return (
-    <section className="view narrow">
-      <form className="editor" onSubmit={submit}>
-        <div className="section-heading">
-          <h1>{t('escribir')}</h1>
-          <button disabled={enviando}>{enviando ? t('guardando') : t('publicar')}</button>
+    <section className="writer-studio">
+      <form className="writer-editor" onSubmit={submit}>
+        <div className="writer-toolbar">
+          <div>
+            <span className="section-label">{t('escribir')}</span>
+            <h1>{form.titulo || t('tituloHistoria')}</h1>
+          </div>
+          <div className="writer-actions">
+            <label className="check-row"><input type="checkbox" checked={form.esBorrador} onChange={(e) => setForm({ ...form, esBorrador: e.target.checked })} />{t('guardarBorrador')}</label>
+            <button disabled={enviando}>{enviando ? t('guardando') : t('publicar')}</button>
+          </div>
         </div>
-        <input className="title-input" value={form.titulo} onChange={(e) => setForm({ ...form, titulo: e.target.value })} placeholder={t('tituloHistoria')} required minLength={5} />
-        <textarea value={form.contenido} onChange={(e) => setForm({ ...form, contenido: e.target.value })} placeholder={t('escribeMarkdown')} required minLength={20} />
-        <div className="editor-grid">
-          <label>{t('etiquetas')}<input value={form.etiquetas} onChange={(e) => setForm({ ...form, etiquetas: e.target.value })} placeholder="react, viajes, ideas" /></label>
-          <label>{t('imagenes')}<input type="file" accept="image/*" multiple onChange={(e) => setImagenes(e.target.files)} /></label>
+
+        <div className="writer-fields">
+          <input className="title-input" value={form.titulo} onChange={(e) => setForm({ ...form, titulo: e.target.value })} placeholder={t('tituloHistoria')} required minLength={5} />
+          <textarea className="writer-textarea" value={form.contenido} onChange={(e) => setForm({ ...form, contenido: e.target.value })} placeholder={t('escribeMarkdown')} required minLength={20} />
         </div>
-        <label className="check-row"><input type="checkbox" checked={form.esBorrador} onChange={(e) => setForm({ ...form, esBorrador: e.target.checked })} />{t('guardarBorrador')}</label>
-        <div className="markdown-preview">
-          <h2>{t('vistaPrevia')}</h2>
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>{form.contenido || t('contenidoPreview')}</ReactMarkdown>
+
+        <div className="editor-grid writer-meta">
+          <label>{t('etiquetas')}<input value={form.etiquetas} onChange={(e) => setForm({ ...form, etiquetas: e.target.value })} placeholder="#react #viajes #ideas" /></label>
+          <SelectorArchivo
+            etiqueta={t('imagenes')}
+            textoBoton={t('seleccionarImagenes')}
+            archivos={imagenes}
+            multiple
+            onChange={setImagenes}
+          />
         </div>
       </form>
+
+      <aside className="writer-preview">
+        <div className="preview-shell">
+          <span className="section-label">{t('vistaPrevia')}</span>
+          {imagenPreviewUrl && <img className="preview-cover" src={imagenPreviewUrl} alt="" />}
+          <h2>{form.titulo || t('tituloHistoria')}</h2>
+          {etiquetasPreview.length > 0 && (
+            <div className="tag-row">
+              {etiquetasPreview.map((etiqueta) => <span key={etiqueta}>#{etiqueta}</span>)}
+            </div>
+          )}
+          <div className="markdown-preview">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{form.contenido || t('contenidoPreview')}</ReactMarkdown>
+          </div>
+        </div>
+      </aside>
     </section>
   );
 }
@@ -724,6 +764,7 @@ function DetallePublicacion() {
 function Perfil() {
   const { nombreUsuario } = useParams();
   const { usuario, token, refrescarUsuario } = useAuth();
+  const { t } = usePreferencias();
   const [perfil, setPerfil] = useState(null);
   const [estado, setEstado] = useState('cargando');
   const [editando, setEditando] = useState(false);
@@ -819,7 +860,12 @@ function Perfil() {
         <form className="form-panel inline" onSubmit={guardarPerfil}>
           <label>Usuario<input value={form.nombreUsuario} onChange={(e) => setForm({ ...form, nombreUsuario: e.target.value })} /></label>
           <label>Correo<input type="email" value={form.correo} onChange={(e) => setForm({ ...form, correo: e.target.value })} /></label>
-          <label>Foto de perfil<input type="file" accept="image/*" onChange={(e) => setAvatarArchivo(e.target.files?.[0] || null)} /></label>
+          <SelectorArchivo
+            etiqueta="Foto de perfil"
+            textoBoton={t('seleccionarFoto')}
+            archivos={avatarArchivo ? [avatarArchivo] : []}
+            onChange={(archivos) => setAvatarArchivo(archivos?.[0] || null)}
+          />
           {avatarArchivo && <img className="avatar-preview" src={URL.createObjectURL(avatarArchivo)} alt="Vista previa del avatar" />}
           <label>Biografía<textarea value={form.biografia} onChange={(e) => setForm({ ...form, biografia: e.target.value })} /></label>
           <div className="form-actions">
@@ -849,6 +895,37 @@ function UserList({ usuarios }) {
 
 function Avatar({ usuario, grande = false }) {
   return <img className={grande ? 'avatar avatar-lg' : 'avatar'} src={assetUrl(usuario?.avatar) || `https://ui-avatars.com/api/?name=${encodeURIComponent(usuario?.nombreUsuario || 'P')}`} alt="" />;
+}
+
+function SelectorArchivo({ etiqueta, textoBoton, archivos, multiple = false, onChange }) {
+  const { t } = usePreferencias();
+  const lista = Array.from(archivos || []);
+  const resumen = lista.length === 0
+    ? t('ningunArchivo')
+    : lista.length === 1
+      ? lista[0].name
+      : `${lista.length} ${t('archivosSeleccionados')}`;
+
+  return (
+    <label className="file-field">
+      <span>{etiqueta}</span>
+      <span className="file-dropzone">
+        <input
+          className="file-input"
+          type="file"
+          accept="image/*"
+          multiple={multiple}
+          onChange={(event) => onChange(multiple ? event.target.files : Array.from(event.target.files || []))}
+        />
+        <span className="file-icon"><Upload size={20} /></span>
+        <span className="file-copy">
+          <strong>{textoBoton}</strong>
+          <small>{t('soltarImagenes')}</small>
+        </span>
+        <span className="file-status">{resumen}</span>
+      </span>
+    </label>
+  );
 }
 
 function EmptyState({ title, text }) {
